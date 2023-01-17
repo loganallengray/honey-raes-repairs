@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import "./Tickets.css"
 
 export const TicketList = () => {
     const [tickets, setTickets] = useState([])

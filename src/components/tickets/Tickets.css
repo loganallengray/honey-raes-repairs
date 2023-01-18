@@ -1,5 +1,6 @@
 .ticket {
     background-color: #f7c265;
+    border: solid 2px #d5a758;
     margin: 10px 0px;
     padding: 10px; 
 }

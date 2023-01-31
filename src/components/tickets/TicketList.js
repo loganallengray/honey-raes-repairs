@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
+import { Ticket } from "./Ticket";
 import "./Tickets.css"
 
-export const TicketList = () => {
+export const TicketList = ({ searchTermState }) => {
     const [tickets, setTickets] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [filteredTickets, setFiltered] = useState([]);
     const [openOnly, updateOpenOnly] = useState(false);
     const [emergency, setEmergency] = useState(false);
@@ -11,6 +13,13 @@ export const TicketList = () => {
 
     const localHoneyUser = localStorage.getItem("honey_user");
     const honeyUserObject = JSON.parse(localHoneyUser);
+
+    useEffect(
+        () => {
+            const searchedTickets = tickets.filter(ticket => ticket.description.startsWith(searchTermState))
+            setFiltered(searchedTickets)
+        }, [searchTermState]
+    )
 
     useEffect(
         () => {
@@ -23,12 +32,23 @@ export const TicketList = () => {
         }, [emergency]
     )
 
+    const getAllTickets = () => {
+        fetch(`http://localhost:8088/serviceTickets?_embed=employeeTickets`)
+            .then(response => response.json())
+            .then((ticketArray) => {
+                setTickets(ticketArray)
+                setFiltered(ticketArray)
+            })
+    }
+
     useEffect(
         () => {
-            fetch(`http://localhost:8088/serviceTickets`)
+            getAllTickets()
+
+            fetch(`http://localhost:8088/employees?_expand=user`)
                 .then(response => response.json())
-                .then((ticketArray) => {
-                    setTickets(ticketArray)
+                .then((employeeArray) => {
+                    setEmployees(employeeArray)
                 })
         },
         [] // When this array is empty, you are observing initial component state
@@ -80,10 +100,12 @@ export const TicketList = () => {
                 filteredTickets.map(
                     (ticket) => {
                         return (
-                            <section key={ticket.id} className="ticket">
-                                <header>{ticket.description}</header>
-                                <footer>Emergency: {ticket.emergency ? "Y" : "N"}</footer>
-                            </section>
+                            <Ticket 
+                                key={ticket.id}
+                                currentUser={honeyUserObject} 
+                                ticketObject={ticket} 
+                                employees={employees}
+                                getAllTickets={getAllTickets} />
                         )
                     }
                 )

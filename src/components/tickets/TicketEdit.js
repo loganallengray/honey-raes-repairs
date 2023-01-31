@@ -1,38 +1,42 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import "./ticketEdit.css"
 
-export const TicketForm = () => {
-    /*
-        TODO: Add the correct default properties to the
-        initial state object
-    */
-    const [ticket, update] = useState({
-        description: "",
-        emergency: false
-    })
-    /*
-        TODO: Use the useNavigation() hook so you can redirect
-        the user to the ticket list
-    */
-    const navigate = useNavigate();
+export const TicketEdit = () => {
+    const ticket = useParams()
+    const navigate = useNavigate()
 
     const localHoneyUser = localStorage.getItem("honey_user")
     const honeyUserObject = JSON.parse(localHoneyUser)
 
+    const [newTicket, setNewTicket] = useState({
+        description: "",
+        emergency: false,
+        userId: 0,
+        dateCompleted: ""
+    }) 
+
+    useEffect(() => {
+        fetch(`http://localhost:8088/serviceTickets?id=${ticket.ticketId}`)
+            .then(response => response.json())
+            .then((data) => {
+                const singleTicket = data[0]
+                setNewTicket(singleTicket)
+            })
+    }, [])
+
     const handleSaveButtonClick = (event) => {
         event.preventDefault()
 
-        // TODO: Create the object to be saved to the API
         const ticketToSendToAPI = {
             userId: honeyUserObject.id,
-            description: ticket.description,
-            emergency: ticket.emergency,
-            dateCompleted: ""
+            description: newTicket.description,
+            emergency: newTicket.emergency,
+            dateCompleted: newTicket.dateCompleted
         }
 
-        // TODO: Perform the fetch() to POST the object to the API
-        return fetch("http://localhost:8088/serviceTickets", {
-            method: "POST",
+        return fetch(`http://localhost:8088/serviceTickets/${newTicket.id}`, {
+            method: "PUT",
             headers: {
                 "Content-type": "application/json"
             },
@@ -46,21 +50,19 @@ export const TicketForm = () => {
 
     return (
         <form className="ticketForm">
-            <h2 className="ticketForm__title">New Service Ticket</h2>
+            <h2 className="ticketForm__title">Edit Service Ticket</h2>
             <fieldset>
                 <div className="form-group">
                     <label htmlFor="description">Description:</label>
-                    <input
+                    <textarea
                         required autoFocus
-                        type="text"
-                        className="form-control"
-                        placeholder="Brief description of problem"
-                        value={ticket.description}
+                        className="form-description"
+                        value={newTicket.description}
                         onChange={
                             (event) => {
-                                const copy = {...ticket}
+                                const copy = {...newTicket}
                                 copy.description = event.target.value
-                                update(copy)
+                                setNewTicket(copy)
                             }
                         } />
                 </div>
@@ -69,12 +71,12 @@ export const TicketForm = () => {
                 <div className="form-group">
                     <label htmlFor="name">Emergency:</label>
                     <input type="checkbox"
-                        value={ticket.emergency}
+                        value={newTicket.emergency}
                         onChange={
                             (event) => {
-                                const copy = {...ticket}
+                                const copy = {...newTicket}
                                 copy.emergency = event.target.checked
-                                update(copy)
+                                setNewTicket(copy)
                             }
                         } />
                 </div>
@@ -82,7 +84,7 @@ export const TicketForm = () => {
             <button 
                 onClick={(clickEvent) => handleSaveButtonClick(clickEvent)}
                 className="btn btn-primary">
-                Submit Ticket
+                Save Edits
             </button>
         </form>
     )

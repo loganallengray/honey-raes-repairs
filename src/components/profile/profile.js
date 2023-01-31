@@ -1,17 +1,17 @@
-import { CustomerNav } from "./CustomerNav";
-import { EmployeeNav } from "./EmployeeNav";
+import { CustomerForm } from "./CustomerForm";
+import { EmployeeForm } from "./EmployeeForm";
 
-export const NavBar = () => {
+export const Profile = () => {
     const localHoneyUser = localStorage.getItem("honey_user");
     const honeyUserObject = JSON.parse(localHoneyUser);
 
     if (honeyUserObject.staff) {
         return (
-            <EmployeeNav />
+            <EmployeeForm />
         )
     } else {
         return (
-            <CustomerNav />
+            <CustomerForm />
         )
     }
 }
